@@ -105,7 +105,7 @@ check_if_last_rp() {
 }
 
 # List object hashes.  Each hash is followed by the newest rollback point
-# that referes the object.
+# that refers the object.
 get_newest_ref() {
 	local rp rollback_list
 
