@@ -116,10 +116,10 @@ get_newest_ref() {
 	{
 		cut -d"|" -f2 $DBDIR/tINDEX.present | sed 's/$/ tINDEX.present/'
 		for rp in $rollback_list; do
-			awk -F"|" '{
-				if ($2 != "L" && $2 != "d" && $2 != "-")
-					print $7, "'$rp'";
-			}' $DBDIR/$rp/INDEX-OLD $DBDIR/$rp/INDEX-NEW
+			awk -F"|" -vrp="$rp" '
+				$2 != "L" && $2 != "d" && $2 != "-" {
+					print $7, rp;
+				}' $DBDIR/$rp/INDEX-OLD $DBDIR/$rp/INDEX-NEW
 		done
 	} | sort -u -k1,1 | sort -k2,2
 }
