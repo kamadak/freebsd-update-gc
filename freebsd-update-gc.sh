@@ -169,7 +169,7 @@ print_rp() {
 	nboth=$(cut -d"|" -f1 $DBDIR/$rp/INDEX-OLD $DBDIR/$rp/INDEX-NEW | \
 	    sort | uniq -d | wc -l)
 	printf "+%d -%d %%%d ref %d\n" \
-	    $((nnew - nboth)) $((nold - nboth)) "$nboth" "$ref_count"
+	    $((nnew - nboth)) $((nold - nboth)) "$nboth" "${ref_count:-0}"
 }
 
 # Get the userland version from /bin/freebsd-version, or the kernel
