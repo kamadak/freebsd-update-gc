@@ -13,6 +13,14 @@ Example of Use
 
    # freebsd-update-gc remove install.TjaXlG
 
+Caveat
+------
+   Due to a bug or an unexpected change in the storage structure of
+   freebsd-update, this utility may render your system destroyed or
+   unable to rollback later when needed.  Do not use this utility
+   unless you are really running short of disk space and you are
+   prepared to reinstall if something goes wrong.
+
 License
 -------
 
