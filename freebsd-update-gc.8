@@ -1,0 +1,119 @@
+.\" $Id$
+.\"
+.\" Copyright (c) 2014 KAMADA Ken'ichi.
+.\" All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.Dd November 27, 2014
+.Dt FREEBSD-UPDATE-GC 8
+.Os
+.\" ----------------------------------------------------------------
+.Sh NAME
+.Nm freebsd-update-gc
+.Nd clean up freebsd-update rollback points
+.\" ----------------------------------------------------------------
+.Sh SYNOPSIS
+.Nm
+.Cm list
+.Nm
+.Cm remove Ar install.id
+.\" ----------------------------------------------------------------
+.Sh DESCRIPTION
+The
+.Nm
+utility lists
+.Xr freebsd-update 8
+rollback points and removes them.
+.Pp
+The following commands are available.
+.Bl -tag -width "remove"
+.It Cm list
+List the rollback points in the reverse chronological order.
+The format of the listing is described later in this man page.
+.It Cm remove Ar install.id
+Remove a rollback point with the given ID.
+The point must be the oldest one.
+Removing all points is not allowed;
+in other words, the most recent point cannot be removed.
+.El
+.Ss List Format
+The
+.Cm list
+command displays rollback points in the following format.
+.Bd -literal -offset 3m
+2014-11-14 10.1-RELEASE (install.4btbQt) +719 -107 %13718 ref 17885
+2014-11-04 10.0-RELEASE-p12 (install.cZgTyl) +4 -3 %83 ref 148
+2014-10-21 10.0-RELEASE-p10 (install.chgEop) +0 -0 %152 ref 16
+2014-09-16 10.0-RELEASE-p9 (install.fKQ2Sq) +0 -0 %3 ref 3
+2014-09-09 10.0-RELEASE-p8 (install.xogb6d) +0 -0 %147 ref 10
+.Ed
+.Pp
+Each line consists of the following fields.
+.Pp
+.Bl -tag -offset 3m -width "Version" -compact
+.It Date
+The date of installation.
+This is the mtime of the index directory, so a wrong date may be displayed
+if the directory is touched for some reasons.
+.It Version
+The FreeBSD version.
+.It Li ( Ns No ID Ns Li )
+The ID of the rollback point.
+.It Li + Ns No Add
+The number of added files.
+.It Li - Ns No Del
+The number of removed files.
+.It Li % Ns No Mod
+The number of updated files.
+.It Li ref No Ref
+The number of objects that can be deleted by removing this rollback point.
+If a object is also referred by a newer point, it cannot be deleted,
+so it is not counted here.
+.El
+.\" ----------------------------------------------------------------
+.Sh FILES
+.Bl -tag -width "01234567" -compact
+.It Pa /var/db/freebsd-update/
+The database directory where
+.Nm
+looks for rollback points.
+.El
+.\" ----------------------------------------------------------------
+.Sh SEE ALSO
+.Xr freebsd-update 8
+.\" ----------------------------------------------------------------
+.Sh AUTHORS
+The
+.Nm
+utility was written by
+.An "KAMADA Ken'ichi" .
+.\" ----------------------------------------------------------------
+.Sh CAVEAT
+Due to a bug or an unexpected change in the storage structure of
+freebsd-update,
+this utility may render your system destroyed or
+unable to rollback later when needed.
+Do not use this utility unless you are really running short of disk space and
+you are prepared to reinstall if something goes wrong.
+.\"
+.\" EOF
