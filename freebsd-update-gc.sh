@@ -149,6 +149,7 @@ list() {
 print_rp() {
 	local rp version mtime
 	local ref_count ref_count_list
+	local nold nnew nboth
 
 	rp=$1
 	ref_count_list=$2
@@ -163,15 +164,12 @@ print_rp() {
 	EOS
 
 	printf "%s " "$mtime $version ($rp)"
-	{
-		sed 's/|.*//; s/^/old /' $DBDIR/$rp/INDEX-OLD
-		sed 's/|.*//; s/^/new /' $DBDIR/$rp/INDEX-NEW
-	} | sort -k2 | uniq -f1 -c | awk '{
-		if ($1 == 2) both++;
-		else if ($2 == "old") old++;
-		else if ($2 == "new") new++;
-	} END { printf "+%d -%d %%%d", new, old, both; }'
-	printf " ref %d\n" $ref_count
+	nold=$(wc -l < $DBDIR/$rp/INDEX-OLD)
+	nnew=$(wc -l < $DBDIR/$rp/INDEX-NEW)
+	nboth=$(cut -d"|" -f1 $DBDIR/$rp/INDEX-OLD $DBDIR/$rp/INDEX-NEW | \
+	    sort | uniq -d | wc -l)
+	printf "+%d -%d %%%d ref %d\n" \
+	    $((nnew - nboth)) $((nold - nboth)) "$nboth" "$ref_count"
 }
 
 # Get the userland version from /bin/freebsd-version, or the kernel
