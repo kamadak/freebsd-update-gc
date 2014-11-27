@@ -4,6 +4,15 @@ Cleanup utility for freebsd-update rollback points
    The freebsd-update-gc utility removes the old rollback points of
    freebsd-update(8).
 
+Example of Use
+--------------
+
+   # freebsd-update-gc list
+   2014-11-14 10.1-RELEASE (install.6R04xP) +710 -107 %13860 ref 18145
+   2014-11-04 10.0-RELEASE-p12 (install.TjaXlG) +2345 -1565 %13580 ref 10359
+
+   # freebsd-update-gc remove install.TjaXlG
+
 License
 -------
 
