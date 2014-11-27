@@ -121,7 +121,7 @@ get_newest_ref() {
 					print $7, rp;
 				}' $DBDIR/$rp/INDEX-OLD $DBDIR/$rp/INDEX-NEW
 		done
-	} | sort -u -k1,1 | sort -k2,2
+	} | sort -u -k1,1
 }
 
 # List rollback points.
@@ -133,8 +133,11 @@ list() {
 	pending_list=$2
 	newest_ref=$3
 
-	# newest_ref is already sorted by the 2nd field.
-	ref_count_list=$(uniq -f1 -c <<-EOS | awk '{ print $3, $1 }')
+	ref_count_list=$(awk '{
+		count[$2]++;
+	} END {
+		for (key in count) { print key, count[key]; }
+	}' <<-EOS)
 		$newest_ref
 	EOS
 
