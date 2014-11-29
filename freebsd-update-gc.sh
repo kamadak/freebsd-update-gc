@@ -107,20 +107,29 @@ check_if_last_rp() {
 # List object hashes.  Each hash is followed by the newest rollback point
 # that refers the object.
 get_newest_ref() {
-	local rp rollback_list
+	local rp rollback_list find_garbage
 
 	rollback_list=$1
+	find_garbage=$2
 
 	# Output newer rollback points first.  sort -u implies a stable sort,
 	# so the newest point is preserved.
 	{
-		cut -d"|" -f2 $DBDIR/tINDEX.present | sed 's/$/ tINDEX.present/'
+		# tag points to tINDEX.present, which is not in the "files".
+		#cut -d"|" -f5 $DBDIR/tag | sed 's/$/.gz tag/'
+		cut -d"|" -f2 $DBDIR/tINDEX.present | \
+		    sed 's/$/.gz tINDEX.present/'
 		for rp in $rollback_list; do
 			awk -F"|" -vrp="$rp" '
 				$2 != "L" && $2 != "d" && $2 != "-" {
-					print $7, rp;
+					print $7 ".gz", rp;
 				}' $DBDIR/$rp/INDEX-OLD $DBDIR/$rp/INDEX-NEW
 		done
+		if [ -n "$find_garbage" ]; then
+			# find is faster than "ls -f" on FreeBSD 10.0.
+			(cd $DBDIR/files && find . -mindepth 1 -maxdepth 1 | \
+			    sed 's|^\./||; s/$/ unref/')
+		fi
 	} | sort -u -k1,1
 }
 
@@ -217,9 +226,30 @@ remove() {
 	EOS
 }
 
+find_garbage() {
+	local newest_ref rp rollback_list
+
+	newest_ref=$1
+	rollback_list=$2
+
+	# Unreferenced files/*.
+	awk '/ unref$/ { print "files/" $1 }' <<-EOS
+		$newest_ref
+	EOS
+
+	# Unreferenced install.*.
+	{
+		for rp in $rollback_list; do
+			printf "%s ref\n" $rp
+		done
+		(cd $DBDIR && ls -df install.*)
+	} | sort -u -k1,1 | grep -v ' ref$' || true
+}
+
 usage() {
 	printf "usage: %s list\n" "$progname"
 	printf "       %s remove install.id\n" "$progname"
+	printf "       %s find-garbage\n" "$progname"
 	exit 1
 }
 
@@ -231,14 +261,19 @@ error() {
 if [ $# -eq 1 -a x"$1" = xlist ]; then
 	rollback_list=$(get_rollback_list)
 	pending_list=$(get_pending_list)
-	newest_ref=$(get_newest_ref "$pending_list $rollback_list")
+	newest_ref=$(get_newest_ref "$pending_list $rollback_list" "")
 	list "$rollback_list" "$pending_list" "$newest_ref"
 elif [ $# -eq 2 -a x"$1" = xremove ]; then
 	rollback_list=$(get_rollback_list)
 	pending_list=$(get_pending_list)
 	prev_rp=$(check_if_last_rp "$rollback_list" "$2")
-	newest_ref=$(get_newest_ref "$pending_list $rollback_list")
+	newest_ref=$(get_newest_ref "$pending_list $rollback_list" "")
 	remove "$newest_ref" "$2" "$prev_rp"
+elif [ $# -eq 1 -a x"$1" = xfind-garbage ]; then
+	rollback_list=$(get_rollback_list)
+	pending_list=$(get_pending_list)
+	newest_ref=$(get_newest_ref "$pending_list $rollback_list" find_garbage)
+	find_garbage "$newest_ref" "$pending_list $rollback_list"
 else
 	usage
 fi
