@@ -226,6 +226,27 @@ remove() {
 	EOS
 }
 
+show() {
+	local rp
+
+	rp=$1
+
+	echo "The following files were removed:"
+	{
+		awk -F"|" '{ print "1|" $1 }' $DBDIR/$rp/INDEX-OLD
+		awk -F"|" '{ print "2|" $1 }' $DBDIR/$rp/INDEX-NEW
+	} | sort -t"|" -k2,2 | uniq -s2 -u | awk -F"|" '$1 == "1" { print $2 }'
+	echo
+	echo "The following files were added:"
+	{
+		awk -F"|" '{ print "1|" $1 }' $DBDIR/$rp/INDEX-OLD
+		awk -F"|" '{ print "2|" $1 }' $DBDIR/$rp/INDEX-NEW
+	} | sort -t"|" -k2,2 | uniq -s2 -u | awk -F"|" '$1 == "2" { print $2 }'
+	echo
+	echo "The following files were updated:"
+	cut -d"|" -f1 $DBDIR/$rp/INDEX-OLD $DBDIR/$rp/INDEX-NEW | sort | uniq -d
+}
+
 find_garbage() {
 	local newest_ref rp rollback_list
 
@@ -249,6 +270,7 @@ find_garbage() {
 usage() {
 	printf "usage: %s list\n" "$progname"
 	printf "       %s remove install.id\n" "$progname"
+	printf "       %s show install.id\n" "$progname"
 	printf "       %s find-garbage\n" "$progname"
 	exit 1
 }
@@ -269,6 +291,8 @@ elif [ $# -eq 2 -a x"$1" = xremove ]; then
 	prev_rp=$(check_if_last_rp "$rollback_list" "$2")
 	newest_ref=$(get_newest_ref "$pending_list $rollback_list" "")
 	remove "$newest_ref" "$2" "$prev_rp"
+elif [ $# -eq 2 -a x"$1" = xshow ]; then
+	show "$2"
 elif [ $# -eq 1 -a x"$1" = xfind-garbage ]; then
 	rollback_list=$(get_rollback_list)
 	pending_list=$(get_pending_list)
