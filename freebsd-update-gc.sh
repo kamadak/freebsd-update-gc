@@ -104,8 +104,8 @@ check_if_last_rp() {
 	echo "$prev"
 }
 
-# List object hashes.  Each hash is followed by the newest rollback point
-# that refers the object.
+# List object hashes (+ trailing .gz).  Each hash is followed by the
+# newest rollback point that refers the object.
 get_newest_ref() {
 	local rp rollback_list find_garbage
 
@@ -220,7 +220,7 @@ remove() {
 	$doit touch -d $mtime "$DBDIR/$prev_rp"
 	$doit rm "$DBDIR/$rp"/*
 	$doit rmdir "$DBDIR/$rp"
-	sed -n "/$rp\$/ { s| .*$|.gz|; s|^|$DBDIR/files/|; p; }" <<-EOS | \
+	sed -n "/ $rp\$/ { s| .*\$||; s|^|$DBDIR/files/|; p; }" <<-EOS | \
 	    $doit xargs rm
 		$newest_ref
 	EOS
