@@ -34,6 +34,7 @@ export LC_ALL=C
 DBDIR=/var/db/freebsd-update
 
 doit=""
+#doit="echo"
 progname=$(basename "$0")
 
 # List the rollback points from the newest to the oldest.
@@ -221,7 +222,7 @@ remove() {
 	$doit rm "$DBDIR/$rp"/*
 	$doit rmdir "$DBDIR/$rp"
 	sed -n "/ $rp\$/ { s| .*\$||; s|^|$DBDIR/files/|; p; }" <<-EOS | \
-	    $doit xargs rm
+	    xargs $doit rm
 		$newest_ref
 	EOS
 }
