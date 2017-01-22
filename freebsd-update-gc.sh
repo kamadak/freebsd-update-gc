@@ -87,7 +87,7 @@ check_if_last_rp() {
 	target=$2
 
 	for rp in $rollback_list; do
-		if [ x"$rp" == x"$target" ]; then
+		if [ x"$rp" = x"$target" ]; then
 			exist=yes
 		fi
 		prev=$last
