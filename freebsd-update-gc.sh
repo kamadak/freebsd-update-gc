@@ -232,20 +232,25 @@ show() {
 
 	rp=$1
 
+	if [ ! -e $DBDIR/"$rp" ]; then
+		error "$rp: no such rollback point"
+	fi
+
 	echo "The following files were removed:"
 	{
-		awk -F"|" '{ print "1|" $1 }' $DBDIR/$rp/INDEX-OLD
-		awk -F"|" '{ print "2|" $1 }' $DBDIR/$rp/INDEX-NEW
+		awk -F"|" '{ print "1|" $1 }' $DBDIR/"$rp"/INDEX-OLD
+		awk -F"|" '{ print "2|" $1 }' $DBDIR/"$rp"/INDEX-NEW
 	} | sort -t"|" -k2,2 | uniq -s2 -u | awk -F"|" '$1 == "1" { print $2 }'
 	echo
 	echo "The following files were added:"
 	{
-		awk -F"|" '{ print "1|" $1 }' $DBDIR/$rp/INDEX-OLD
-		awk -F"|" '{ print "2|" $1 }' $DBDIR/$rp/INDEX-NEW
+		awk -F"|" '{ print "1|" $1 }' $DBDIR/"$rp"/INDEX-OLD
+		awk -F"|" '{ print "2|" $1 }' $DBDIR/"$rp"/INDEX-NEW
 	} | sort -t"|" -k2,2 | uniq -s2 -u | awk -F"|" '$1 == "2" { print $2 }'
 	echo
 	echo "The following files were updated:"
-	cut -d"|" -f1 $DBDIR/$rp/INDEX-OLD $DBDIR/$rp/INDEX-NEW | sort | uniq -d
+	cut -d"|" -f1 $DBDIR/"$rp"/INDEX-OLD $DBDIR/"$rp"/INDEX-NEW | \
+		sort | uniq -d
 }
 
 find_garbage() {
